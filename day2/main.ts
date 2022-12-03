@@ -6,12 +6,6 @@ const input = await Deno.readTextFile("./input");
  * C Z Scissors
  */
 
-/**
- * R > S
- * S > P
- * P > R
- */
-
 const score = input.split("\n").reduce((score, round) => {
   const me = round[2];
   const shapeScore = me === "X" ? 1 : me === "Y" ? 2 : me === "Z" ? 3 : 0;
