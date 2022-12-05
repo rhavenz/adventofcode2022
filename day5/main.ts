@@ -26,6 +26,7 @@ const stacks = headerEntries.map((id) => ({
   state: lines.map((line) => line[id].trim()).filter(Boolean),
 }));
 
+// * part1
 console.log(
   actions
     // .slice(0, 1)
@@ -37,6 +38,27 @@ console.log(
       const to_ = prev.find((stack) => stack.id === to)!;
 
       to_.state = to_.state.concat(from_.state.slice(0 - size).reverse());
+      from_.state = from_.state.slice(0, 0 - size);
+
+      return prev;
+    }, stacks)
+    .map((stack) => stack.state.slice(-1))
+    .flat()
+    .join("")
+);
+
+// * part2
+console.log(
+  actions
+    // .slice(0, 1)
+    .reduce((prev, action) => {
+      const [, size, , from, , to] = action.split(" ").map(Number);
+      console.log({ size, from, to });
+
+      const from_ = prev.find((stack) => stack.id === from)!;
+      const to_ = prev.find((stack) => stack.id === to)!;
+
+      to_.state = to_.state.concat(from_.state.slice(0 - size));
       from_.state = from_.state.slice(0, 0 - size);
 
       return prev;
