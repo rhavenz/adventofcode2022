@@ -96,17 +96,38 @@ const result = lines.split("\n").reduce(
     return prev;
   },
   {
-    knots: ["H", 1].map((_) => ({ x: 0, y: 0 })),
-    history: ["H", 1].map((_) => [{ x: 0, y: 0 }]),
+    // * part1
+    // knots: ["H", 1].map((_) => ({ x: 0, y: 0 })),
+    // history: ["H", 1].map((_) => [{ x: 0, y: 0 }]),
+    // * part2
+    knots: ["H", 1, 2, 3, 4, 5, 6, 7, 8, 9].map((_) => ({ x: 0, y: 0 })),
+    history: ["H", 1, 2, 3, 4, 5, 6, 7, 8, 9].map((_) => [{ x: 0, y: 0 }]),
   }
 );
 
-const x = result.history.flat().map((_) => _.x);
-const y = result.history.flat().map((_) => _.y);
-const minX = Math.min(...x);
-const maxX = Math.max(...x);
-const minY = Math.min(...y);
-const maxY = Math.max(...y);
+const dedup = <T>(v: T, idx: number, arr: Array<T>) => arr.indexOf(v) === idx;
+const allPositions = result.history
+  .flat()
+  .map((v) => `${v.x}[-]${v.y}`)
+  .filter(dedup)
+  .map((v) => v.split("[-]").map(Number));
+
+const minX = allPositions.reduce(
+  (prev, curr) => (curr[0] < prev ? curr[0] : prev),
+  0
+);
+const maxX = allPositions.reduce(
+  (prev, curr) => (curr[0] > prev ? curr[0] : prev),
+  0
+);
+const minY = allPositions.reduce(
+  (prev, curr) => (curr[1] < prev ? curr[1] : prev),
+  0
+);
+const maxY = allPositions.reduce(
+  (prev, curr) => (curr[1] > prev ? curr[1] : prev),
+  0
+);
 
 let output = "";
 for (let y_ = minY; y_ <= maxY; y_++) {
@@ -118,7 +139,7 @@ for (let y_ = minY; y_ <= maxY; y_++) {
   output += "\n";
 }
 
-console.log("===============\n");
-console.log(output);
-console.log("===============\n");
+// console.log("===============\n");
+// console.log(output);
+// console.log("===============\n");
 console.log([...output].filter((v) => v === "#").length);
