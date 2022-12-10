@@ -6,16 +6,52 @@ const sqr = (a: number) => a * a;
 const distance = (a: Position, b: Position) =>
   Math.sqrt(sqr(b.y - a.y) + sqr(b.x - a.x));
 
-const getNextTailPosition = (
-  head: Position,
-  tail: Position,
-  prevHead: Position
-) => {
-  if (distance(head, tail) < 2) {
-    return tail;
+const getNextTailPosition = (head: Position, tail: Position) => {
+  const distance_ = distance(head, tail);
+
+  if (distance_ === 2) {
+    return [
+      {
+        x: tail.x - 1,
+        y: tail.y,
+      },
+      {
+        x: tail.x + 1,
+        y: tail.y,
+      },
+      {
+        x: tail.x,
+        y: tail.y - 1,
+      },
+      {
+        x: tail.x,
+        y: tail.y + 1,
+      },
+    ].filter((v) => distance(head, v) === 1)[0];
   }
 
-  return prevHead;
+  if (distance_ > 2) {
+    return [
+      {
+        x: tail.x - 1,
+        y: tail.y - 1,
+      },
+      {
+        x: tail.x + 1,
+        y: tail.y - 1,
+      },
+      {
+        x: tail.x - 1,
+        y: tail.y + 1,
+      },
+      {
+        x: tail.x + 1,
+        y: tail.y + 1,
+      },
+    ].filter((v) => distance(head, v) < 2)[0];
+  }
+
+  return tail;
 };
 
 type Direction = "U" | "R" | "D" | "L";
@@ -24,56 +60,65 @@ type Position = {
   y: number;
 };
 
-const count = lines
-  .split("\n")
-  .reduce(
-    (prev, curr) => {
-      const [direction, step_] = curr.split(" ");
-      const step = Number(step_);
-      const axis = direction === "L" || direction === "R" ? "x" : "y";
-      const op = direction === "L" || direction === "U" ? subtract : add;
+const result = lines.split("\n").reduce(
+  (prev, curr) => {
+    const [direction_, step_] = curr.split(" ");
+    const direction = direction_ as Direction;
+    const step = Number(step_);
+    const axis = direction === "L" || direction === "R" ? "x" : "y";
+    const operator = direction === "L" || direction === "U" ? subtract : add;
 
-      let i = 0;
-      while (i < step) {
-        const nextHead = {
-          ...prev.head,
-          [axis]: op(prev.head[axis], 1),
-        };
+    let i = 0;
+    while (i < step) {
+      let z = 0;
+      while (z < prev.knots.length - 1) {
+        const [head, tail] = prev.knots.slice(z, z + 2);
 
-        prev.history.push(getNextTailPosition(nextHead, prev.tail, prev.head));
+        const head_ =
+          z === 0
+            ? {
+                ...head,
+                [axis]: operator(head[axis], 1),
+              }
+            : head;
 
-        prev.head = nextHead;
-        prev.tail = prev.history.at(-1)!;
-        i++;
+        const tail_ = getNextTailPosition(head_, tail);
+
+        prev.knots[z] = head_;
+        prev.knots[z + 1] = tail_;
+        prev.history[z].push(head_);
+        prev.history[z + 1].push(tail_);
+        z++;
       }
-
-      return prev;
-    },
-    {
-      head: { x: 0, y: 0 },
-      tail: { x: 0, y: 0 },
-      history: [{ x: 0, y: 0 }],
+      i++;
     }
-  )
-  .history.map((h) => JSON.stringify(h))
-  .filter((value, idx, arr) => arr.indexOf(value) === idx).length;
 
-console.log(count);
+    return prev;
+  },
+  {
+    knots: ["H", 1].map((_) => ({ x: 0, y: 0 })),
+    history: ["H", 1].map((_) => [{ x: 0, y: 0 }]),
+  }
+);
 
-// const x = count.history.map((_) => _.x);
-// const y = count.history.map((_) => _.y);
-// const minX = Math.min(...x);
-// const maxX = Math.max(...x);
-// const minY = Math.min(...y);
-// const maxY = Math.max(...y);
+const x = result.history.flat().map((_) => _.x);
+const y = result.history.flat().map((_) => _.y);
+const minX = Math.min(...x);
+const maxX = Math.max(...x);
+const minY = Math.min(...y);
+const maxY = Math.max(...y);
 
-// let output = "";
-// for (let i = minY; i <= maxY; i++) {
-//   for (let y = minX; y <= maxX; y++) {
-//     output += count.history.find((v) => v.y === i && v.x === y) ? "#" : ".";
-//   }
-//   output += "\n";
-// }
+let output = "";
+for (let y_ = minY; y_ <= maxY; y_++) {
+  for (let x_ = minX; x_ <= maxX; x_++) {
+    output += result.history.at(-1)!.find((v) => v.y === y_ && v.x === x_)
+      ? "#"
+      : ".";
+  }
+  output += "\n";
+}
 
-// console.log(output);
-// console.log([...output].filter((v) => v === "#").length);
+console.log("===============\n");
+console.log(output);
+console.log("===============\n");
+console.log([...output].filter((v) => v === "#").length);
