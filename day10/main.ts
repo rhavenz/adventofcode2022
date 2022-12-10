@@ -55,8 +55,10 @@ for (const [idx, signal] of Object.entries(cpu.getSignalStrengthReport())) {
   }
 }
 
+// * part1
 console.log(result.reduce((a, b) => a + b));
 
+// * part2
 console.log("\n=====================\n");
 
 const output = cpu.getOutput();
