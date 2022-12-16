@@ -46,11 +46,13 @@ const getWorryLevel = (old: number, op: string[]) => {
   const op_ = op.map((v) => (v === "old" ? old : v));
 
   if (op_.indexOf("+") !== -1) {
-    return Math.floor((Number(op_[0]) + Number(op_[2])) / 3);
+    return Number(op_[0]) + Number(op_[2]);
+    // return Math.floor((Number(op_[0]) + Number(op_[2])) / 3);
   }
 
   if (op_.indexOf("*") !== -1) {
-    return Math.floor((Number(op_[0]) * Number(op_[2])) / 3);
+    return Number(op_[0]) * Number(op_[2]);
+    // return Math.floor((Number(op_[0]) * Number(op_[2])) / 3);
   }
 
   throw new Error("Unexpected operation");
@@ -64,13 +66,17 @@ const getTarget = (worryLevel: number, moveConfig: number[]) => {
   return moveConfig[2];
 };
 
-for (let round = 0; round < 20; round++) {
+const divider = Object.values(moves).reduce((a, b) => a * b[0], 1);
+
+for (let round = 0; round < 10000; round++) {
   for (let turn = 0; turn < Object.keys(monkeys).length; turn++) {
     for (const old of monkeys[turn].concat()) {
       activities[turn] ??= 0;
       activities[turn]++;
 
-      const new_ = getWorryLevel(old, operations[turn]);
+      let new_ = getWorryLevel(old, operations[turn]);
+      new_ = new_ % divider;
+
       const target = getTarget(new_, moves[turn]);
 
       monkeys[turn].shift();
@@ -79,4 +85,13 @@ for (let round = 0; round < 20; round++) {
   }
 }
 
-console.log({ monkeys, operations, moves, activities });
+const r = Object.values(activities).sort((a: number, b: number) => b - a);
+const r_ = r[0] * r[1];
+
+console.log({
+  monkeys,
+  operations,
+  moves,
+  activities,
+  result: r_,
+});
